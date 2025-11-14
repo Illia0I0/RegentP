@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en" style="scroll-behavior:smooth">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Peregrine Warriors — Cinematic 4x4 Experience</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pw-gold': '#F6C65E',
+                        'pw-gold-acc': '#C0A040',
+                        'pw-red': '#E10600',
+                        'pw-dark': '#050505'
+                    },
+                    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/InertiaPlugin.min.js" defer></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script type="module" src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+
+    <style>
+        :root { --bg:#000; --gold:#F6C65E; --muted:#B0A07A }
+        html,body { background:var(--bg); color:#fff; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        .glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter: blur(8px); }
+        .gold-glow { box-shadow: 0 12px 40px rgba(246,198,94,0.10); }
+        .gold-border { border: 1px solid rgba(246,198,94,0.10); }
+        .soft-gold { color: var(--gold); }
+        .muted { color: #999; }
+        .card-hover:hover { transform: translateY(-8px) scale(1.01); }
+        .split-letter { display:inline-block; overflow:hidden; vertical-align:middle; }
+        .split-letter span { display:inline-block; transform: translateY(110%); }
+        .text-reveal { clip-path: inset(0 100% 0 0); transition: clip-path 1.2s cubic-bezier(.25,1,.5,1); }
+        .text-reveal.visible { clip-path: inset(0 0% 0 0); }
+        .progress-track { background: rgba(255,255,255,0.06); border-radius:999px; height:12px; overflow:hidden; }
+        .progress-fill { height:100%; background: linear-gradient(90deg,var(--gold), #ffd86b); width:0%; border-radius:999px; }
+        .lightbox-backdrop { background: rgba(0,0,0,0.85); }
+        .scroll-indicator { animation:updown 1.6s infinite; }
+        @keyframes updown { 0%{transform:translateY(0)}50%{transform:translateY(8px)}100%{transform:translateY(0)} }
+        [data-animate]{opacity:0;transform:translateY(28px);transition:opacity 0.85s ease,transform 0.85s ease}
+        .animated-visible{opacity:1;transform:translateY(0)}
+        ::-webkit-scrollbar{width:9px} ::-webkit-scrollbar-thumb{background: rgba(255,255,255,0.06); border-radius:999px}
+        /* Responsive image cover */
+        .cover { object-fit:cover; object-position:center; }
+    </style>
+</head>
+
+<body class="antialiased">
+
+<header id="site-header" class="fixed inset-x-0 top-0 z-50 backdrop-blur-md bg-black/60 border-b border-gold-acc/10">
+    <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+        <a href="#hero" class="flex items-center gap-3">
+            <img src="Logo.jfif" alt="PW Logo" class="h-10 w-auto"/>
+            <div class="leading-none">
+                <div class="text-base font-extrabold soft-gold">Peregrine <span class="text-white">Warriors</span></div>
+                <div class="text-xs muted">Precision · Power · Perseverance</div>
+            </div>
+        </a>
+
+        <nav id="main-nav" class="hidden lg:flex items-center gap-6 text-sm text-gray-300 uppercase font-semibold">
+            <a href="#vision" class="nav-link">Design</a>
+            <a href="#features" class="nav-link">Engineering</a>
+            <a href="#prototypes" class="nav-link">Prototypes</a>
+            <a href="#team" class="nav-link">Team</a>
+            <a href="#timeline" class="nav-link">Pit Display</a>
+            <a href="#contact" class="nav-link">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+            <button id="brochure-btn" class="hidden md:inline-flex px-4 py-2 bg-gold-acc text-black rounded-full font-semibold hover:scale-[1.02] transition-transform gold-glow">Download Brochure</button>
+            <button id="play-audio" class="w-11 h-11 rounded-full bg-black/50 border border-white/6 flex items-center justify-center gold-glow" title="Play music">
+                <svg data-lucide="play" class="w-5 h-5 text-gold-acc"></svg>
+            </button>
+            <button id="top-btn" class="ml-2 hidden md:inline-flex px-3 py-1 border border-white/6 rounded hover:bg-white/5 text-sm">Top</button>
+        </div>
+    </div>
+</header>
+
+<main class="pt-20">
+    <section id="hero" class="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+        <canvas id="particle-canvas" class="absolute inset-0 -z-10" aria-hidden="true"></canvas>
+
+        <div class="absolute inset-0 -z-20">
+            <img id="hero-bg" src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=1950&q=80" alt="Track background" class="w-full h-full cover cover opacity-80"/>
+            <div class="absolute inset-0 bg-black/55"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div class="text-left lg:pl-12 z-10">
+                <div class="mb-6 flex items-center gap-4">
+                    <img src="Logo.jfif" class="h-16 w-auto drop-shadow-lg" alt="logo"/>
+                    <div>
+                        <div class="uppercase text-sm muted tracking-wider">Land Rover 4x4 in Schools — Yas Abu Dhabi</div>
+                        <div class="text-2xl font-extrabold soft-gold">Peregrine Warriors</div>
+                    </div>
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
+                    <span class="split-letter" id="split-1"><span>Engineered</span></span>
+                    <span class="ml-3 text-gold-acc">to</span>
+                    <span class="ml-3 split-letter" id="split-2"><span>Dominate</span></span>
+                </h1>
+
+                <p class="text-gray-300 max-w-xl mb-4">We combine high-precision design, competition-grade electronics and tuned chassis engineering to build tournament-winning 4x4 machines. Every iteration is tested, measured and perfected.</p>
+                <p class="text-gold-acc font-semibold mb-4">Warriors are ready for a new Season!</p>
+
+                <div class="flex items-center gap-4">
+                    <a href="#prototypes" class="px-6 py-3 bg-gold-acc text-black rounded-full font-bold shadow-xl hover:scale-[1.03] transition-transform">See Prototypes</a>
+                    <a href="#team" class="px-4 py-2 border border-white/6 rounded-md text-sm hover:text-gold-acc">Meet the Team</a>
+                </div>
+            </div>
+
+            <div class="relative z-10 flex justify-center lg:justify-end">
+                <div id="vehicle-card" class="w-[360px] md:w-[520px] lg:w-[640px] rounded-2xl overflow-hidden gold-border glass transform transition-transform duration-700 hover:scale-[1.01]">
+                    <img src="Media.jfif" alt="Apex Dominator" class="w-full h-96 object-cover cover" />
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm muted uppercase">Final Prototype</div>
+                                <div class="text-2xl font-extrabold soft-gold">Apex Dominator</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs muted">Lap-ready</div>
+                                <div class="text-sm font-medium text-gray-200">Competition tuned</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-3">
+                            <button id="proto-open" class="px-3 py-2 rounded-md border border-white/6 text-sm hover:bg-white/5">Inspect</button>
+                            <button id="proto-light" class="px-3 py-2 rounded-md bg-gold-acc text-black text-sm">Gallery</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        
+    </section>
+
+    <section id="vision" class="py-20 md:py-28 max-w-6xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h3 class="text-3xl font-extrabold mb-3">The Craft</h3>
+                <p class="text-gray-300 mb-4">From CAD iterations to quick-turn prototyping, our workflow prioritizes repeatability and measurable performance. Design decisions are telemetry-led: we measure, iterate, and lock in what improves lap times.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 glass gold-border rounded-xl" data-animate>
+                        <div class="text-sm muted">Chassis Stiffness</div>
+                        <div class="progress-track mt-3"><div class="progress-fill" data-fill="86"></div></div>
+                    </div>
+                    <div class="p-4 glass gold-border rounded-xl" data-animate>
+                        <div class="text-sm muted">Weight Optimization</div>
+                        <div class="progress-track mt-3"><div class="progress-fill" data-fill="78"></div></div>
+                    </div>
+                    <div class="p-4 glass gold-border rounded-xl" data-animate>
+                        <div class="text-sm muted">Electrical Robustness</div>
+                        <div class="progress-track mt-3"><div class="progress-fill" data-fill="92"></div></div>
+                    </div>
+                    <div class="p-4 glass gold-border rounded-xl" data-animate>
+                        <div class="text-sm muted">Serviceability</div>
+                        <div class="progress-track mt-3"><div class="progress-fill" data-fill="88"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="rounded-2xl overflow-hidden gold-border">
+                    <img src="Workshop.png" alt="Engineering desk" class="w-full h-96 object-cover cover"/>
+                </div>
+
+                <div class="absolute -right-6 -bottom-6 w-64 p-4 rounded-xl glass gold-border shadow-lg">
+                    <div class="text-sm muted">Fast Facts</div>
+                    <div class="mt-2 text-lg font-bold soft-gold">Team Size: 5</div>
+                    <div class="text-sm muted">Event: Land Rover 4x4 — Yas, Abu Dhabi</div>
+                    <div class="text-sm mt-2">Motto: <strong>Precision · Power · Perseverance</strong></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-20 bg-gray-900/20 border-t border-gold-acc/8">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-4xl font-extrabold mb-6 text-center">Engineering Highlights</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 glass gold-border rounded-2xl card-hover" data-animate>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-gold-acc">Precision Electronics</h4>
+                        <div class="text-sm muted">Firmware</div>
+                    </div>
+                    <p class="text-gray-300 mt-3">Robust PCB, locked connectors, and custom sensing give us repeatable lap telemetry and safe fail-states.</p>
+                </div>
+
+                <div class="p-6 glass gold-border rounded-2xl card-hover" data-animate>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-gold-acc">Tuned Suspension</h4>
+                        <div class="text-sm muted">Mechanical</div>
+                    </div>
+                    <p class="text-gray-300 mt-3">Suspension geometry tuned for predictable cornering and traction on the course with easy adjustment points between runs.</p>
+                </div>
+
+                <div class="p-6 glass gold-border rounded-2xl card-hover" data-animate>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-gold-acc">Aerodynamics</h4>
+                        <div class="text-sm muted">Bodywork</div>
+                    </div>
+                    <p class="text-gray-300 mt-3">Strategic shaping reduces drag while preserving downforce—especially helpful through tight chicanes and high-speed straights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="prototypes" class="py-24">
+        <div class="max-w-7xl mx-auto px-6 text-center mb-8">
+            <h2 class="text-4xl font-extrabold mb-2">Engineering <span class="text-gold-acc">Evolution</span></h2>
+            <p class="text-gray-400 max-w-3xl mx-auto">Click or drag the prototypes. Tap an image to open the gallery/lightbox.</p>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="relative">
+                <div id="proto-track-container" class="overflow-hidden">
+                    <div id="proto-track" class="flex gap-6 items-start p-4">
+                        </div>
+                </div>
+
+                <div class="absolute -right-2 top-1/2 transform -translate-y-1/2 flex flex-col gap-3">
+                    <button id="proto-prev" class="p-3 rounded-full bg-black/40 border border-white/6"><svg data-lucide="chevron-left" class="w-5 h-5"></svg></button>
+                    <button id="proto-next" class="p-3 rounded-full bg-black/40 border border-white/6"><svg data-lucide="chevron-right" class="w-5 h-5"></svg></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="timeline" class="py-24 bg-gray-900/20 border-t border-gold-acc/8">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-4xl font-extrabold mb-6 text-center">Our old Pit Display </h2>
+            
+            <div class="relative max-w-5xl mx-auto rounded-xl overflow-hidden gold-border glass" data-animate>
+                <img src="Pit.jfif" 
+                     alt="Peregrine Warriors Engineering Timeline Infographic" 
+                     class="w-full h-auto object-cover"/>
+                <div class="absolute bottom-0 inset-x-0 p-4 bg-black/50 text-center text-sm muted">
+                    High-Resolution Pit Display Graphic
+                </div>
+            </div>
+            </div>
+    </section>
+
+    <section id="team" class="py-24">
+        <div class="max-w-7xl mx-auto px-6 text-center mb-10">
+            <h2 class="text-4xl font-extrabold mb-2">Meet the <span class="text-gold-acc">Warriors</span></h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Five core members who handle design, electrics, coding, engineering, and team leadership.</p>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            </div>
+    </section>
+
+    <section id="sponsors" class="py-12">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="text-sm muted mb-3">Supported by</div>
+            <div class="flex items-center justify-center gap-8">
+                <img src="https://placehold.co/140x40?text=Sponsor+1" class="h-10 object-contain" alt="s1">
+                <img src="https://placehold.co/140x40?text=Sponsor+2" class="h-10 object-contain" alt="s2">
+                <img src="https://placehold.co/140x40?text=Sponsor+3" class="h-10 object-contain" alt="s3">
+                <img src="https://placehold.co/140x40?text=Sponsor+4" class="h-10 object-contain" alt="s4">
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-20">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="text-3xl font-extrabold mb-3">Contact & Support</h3>
+            <p class="text-gray-400 mb-6">Interested mentors, sponsors or media? Reach out — we love to collaborate.</p>
+
+            <form id="contact-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input id="name" required placeholder="Your name" class="p-3 rounded bg-black/60 border border-white/6" />
+                <input id="email" required type="email" placeholder="Email" class="p-3 rounded bg-black/60 border border-white/6"/>
+                <input id="subject" placeholder="Subject" class="p-3 rounded bg-black/60 border border-white/6 md:col-span-2"/>
+                <textarea id="message" placeholder="Message" required class="p-3 rounded bg-black/60 border border-white/6 md:col-span-2 h-32"></textarea>
+                <div class="md:col-span-2 flex items-center gap-4 justify-center">
+                    <button type="submit" class="px-6 py-3 bg-gold-acc text-black rounded-full font-semibold">Send Email</button>
+                    <a id="mailto-link" href="mailto:peregrinewarriorsyas@gmail.com" class="px-4 py-3 border border-white/6 rounded">Mail: peregrinewarriors@school.edu</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <footer class="py-10 bg-black border-t border-gold-acc/8 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-400">
+            <div class="mb-4 font-bold soft-gold">Peregrine Warriors</div>
+            <div class="text-sm">&copy; 2025 Peregrine Warriors — Land Rover 4x4 in Schools. All rights reserved.</div>
+        </div>
+    </footer>
+</main>
+
+<div id="lightbox" class="fixed inset-0 z-60 hidden items-center justify-center lightbox-backdrop">
+    <div class="max-w-4xl w-full mx-6">
+        <div class="relative">
+            <button id="lb-close" class="absolute right-4 top-4 p-2 rounded bg-black/40 border border-white/6"><svg data-lucide="x" class="w-5 h-5"></svg></button>
+            <img id="lb-img" src="" class="w-full rounded-lg" alt="">
+            <div id="lb-caption" class="mt-2 text-sm muted"></div>
+        </div>
+    </div>
+</div>
+
+<div id="member-modal" class="fixed inset-0 z-70 hidden items-center justify-center lightbox-backdrop">
+    <div class="max-w-3xl w-full mx-6 p-6 bg-black/80 rounded-2xl gold-border relative">
+        <button id="member-close" class="absolute right-6 top-6 p-2 rounded bg-black/40 border border-white/6 z-10"><svg data-lucide="x" class="w-5 h-5"></svg></button>
+        <div id="member-content" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            </div>
+    </div>
+</div>
+
+<script>
+    // ========== DATA ==========
+    const TEAM = [
+        { role: "Team Manager", name: "Shahin", bio: "Leads strategy, timelines and ensures judging criteria are satisfied. Manages team operations and external communications.", img: "https://images.unsplash.com/photo-1581093863451-2cc6778ec7b0?auto=format&fit=crop&w=600&q=80" },
+        { role: "Electrical Engineer & 3D Designer", name: "Billel", bio: "Designs electrical architecture, sensors and creates 3D parts for fabrication and pit display.", img: "https://images.unsplash.com/photo-1627993202905-b1a72d73f1d3?auto=format&fit=crop&w=600&q=80" },
+        { role: "Embedded Systems Programmer", name: "Nadeem", bio: "Programs microcontrollers, integrates sensors and implements control algorithms for precision driving.", img: "https://images.unsplash.com/photo-1511367461989-ee796e0aa23c?auto=format&fit=crop&w=600&q=80" },
+        { role: "Designer & Portfolio Assistant", name: "Illia", bio: "Creates pit display visuals, portfolio pages and branding to make our engineering story stand out.", img: "https://images.unsplash.com/photo-1542159670-f421f1c7d23a?auto=format&fit=crop&w=600&q=80" },
+        { role: "Engeneering assistance", name: "Ashil", bio: "Assists with CAD refinement, prototyping logistics, and mechanical assembly to ensure rapid iteration.", img: "https://images.unsplash.com/photo-1542159670-f421f1c7d23a?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const PROTOTYPES = [
+        { name: "Thunder Wing", tagline: "Prototype 3 — Aesthetics Focus", img: "Car1.jfif", desc: "Introduced bold styling and aerodynamic accents." },
+        { name: "Stormback", tagline: "Prototype 4 — Aerodynamic Insights", img: "c.png", desc: "Advanced shaping inspired by dive dynamics." },
+        { name: "Shadow Talon", tagline: "Prototype 5 — Refined Identity", img: "Media (2).jfif", desc: "Sharpened lines and aggressive stance." },
+        { name: "Apex Dominator", tagline: "Final Prototype", img: "Media.jfif", desc: "Competition-ready — precision sculpted." }
+    ];
+
+    // TIMELINE_STEPS is now empty as the section is designed for a single image.
+    const TIMELINE_STEPS = []; 
+
+    // ========== HELPERS ==========
+    function $(s){ return document.querySelector(s) }
+    function $all(s){ return Array.from(document.querySelectorAll(s)) }
+
+    // ========== PARTICLES ==========
+    function startParticles(){
+        const c = $('#particle-canvas');
+        if(!c) return;
+        const ctx = c.getContext('2d');
+        let W = c.width = innerWidth, H = c.height = innerHeight;
+        window.addEventListener('resize', ()=>{ W=c.width=innerWidth; H=c.height=innerHeight; });
+        const particles = [];
+        for(let i=0;i<140;i++){
+            particles.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.5+0.3, vx:(Math.random()-0.5)*0.3, vy:-Math.random()*0.2-0.02, a: Math.random()*0.8+0.1 });
+        }
+        function tick(){
+            ctx.clearRect(0,0,W,H);
+            for(const p of particles){
+                p.x += p.vx; p.y += p.vy; p.a -= 0.0004;
+                if(p.y < -10 || p.a <=0){ p.x = Math.random()*W; p.y = H + 10; p.a = Math.random()*0.8+0.1; p.vx=(Math.random()-0.5)*0.3; p.vy=-Math.random()*0.2-0.02; }
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(246,198,94,${p.a})`;
+                ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+                ctx.fill();
+            }
+            requestAnimationFrame(tick);
+        }
+        tick();
+    }
+
+    // ========== RENDER PROTOTYPES ==========
+    function renderPrototypes(){
+        const track = $('#proto-track');
+        PROTOTYPES.forEach(p=>{
+            const el = document.createElement('div');
+            el.className = 'min-w-[300px] lg:min-w-[360px] p-4 rounded-2xl bg-gray-900 gold-border flex-shrink-0 relative cursor-grab';
+            el.innerHTML = `
+             <div class="rounded-lg overflow-hidden">
+               <img src="${p.img}" alt="${p.name}" class="w-full h-44 object-cover rounded-lg proto-img"/>
+             </div>
+             <div class="mt-3">
+               <div class="text-gold-acc font-bold">${p.name}</div>
+               <div class="text-sm muted">${p.tagline}</div>
+               <p class="text-gray-300 text-sm mt-2">${p.desc}</p>
+             </div>
+            `;
+            el.querySelector('.proto-img').addEventListener('click', ()=> openLightbox(p.img, p.name + " — " + p.tagline));
+            track.appendChild(el);
+        });
+
+        // Draggable + arrows
+        const trackEl = track;
+        let index = 0;
+        function cardWidth(){ const c = trackEl.children[0]; return c ? c.getBoundingClientRect().width + parseFloat(getComputedStyle(trackEl).gap || 24) : 0; }
+        function update(animate=true){ const w = cardWidth(); const x = -index * w; gsap.to(trackEl, { x, duration: animate?0.7:0, ease: 'power3.out' }); }
+        $('#proto-next').addEventListener('click', ()=>{ index = Math.min(index+1, PROTOTYPES.length-1); update(); });
+        $('#proto-prev').addEventListener('click', ()=>{ index = Math.max(0, index-1); update(); });
+
+        // Draggable
+        function initDraggable(){
+            const cw = cardWidth();
+            const totalW = cw * PROTOTYPES.length;
+            const containerW = trackEl.parentElement.clientWidth;
+            const minX = Math.min(0, -(totalW - containerW + 8));
+            const existing = Draggable.get(trackEl);
+            if(existing) existing.kill();
+            if(totalW > containerW){
+                Draggable.create(trackEl, {
+                    type:'x',
+                    inertia:true,
+                    bounds:{ minX, maxX: 0 },
+                    onDragEnd: function(){
+                        const cur = this.x;
+                        index = Math.round(Math.abs(cur)/cw);
+                        index = Math.max(0, Math.min(PROTOTYPES.length-1, index));
+                        update();
+                    }
+                });
+            }
+        }
+        setTimeout(initDraggable, 120);
+        window.addEventListener('resize', initDraggable);
+    }
+    
+    // The renderTimeline function has been removed as per the user's request for a single image.
+
+    // ========== RENDER TEAM ==========
+    function renderTeam(){
+        const container = document.querySelector('#team .grid');
+        if (!container) return; // Ensure the container exists
+
+        TEAM.forEach((member, i) => {
+            const el = document.createElement('div');
+            el.className = 'bg-gray-900/40 rounded-xl p-4 text-center glass gold-border card-hover cursor-pointer relative';
+            el.setAttribute('data-animate', '');
+
+            el.innerHTML = `
+                <img src="${member.img}" alt="${member.name}" class="w-24 h-24 mx-auto rounded-full object-cover gold-border mb-3"/>
+                <div class="text-xl font-bold soft-gold">${member.name}</div>
+                <div class="text-sm muted uppercase tracking-wider">${member.role}</div>
+                <button class="mt-3 px-3 py-1 rounded-full border border-white/6 text-xs hover:bg-white/5">View Bio</button>
+            `;
+            // Add click listener to open the modal
+            el.addEventListener('click', () => openMemberModal(i));
+            container.appendChild(el);
+        });
+    }
+
+    // ========== MEMBER MODAL ==========
+    function openMemberModal(index) {
+        const member = TEAM[index];
+        const modal = $('#member-modal');
+        const content = $('#member-content');
+
+        content.innerHTML = `
+            <div class="md:col-span-1 flex flex-col items-center justify-center">
+                <img src="${member.img}" alt="${member.name}" class="w-32 h-32 rounded-full object-cover gold-border mb-4"/>
+                <div class="text-xl font-bold soft-gold">${member.name}</div>
+            </div>
+            <div class="md:col-span-2 text-left">
+                <div class="text-sm muted uppercase tracking-wider mb-2">${member.role}</div>
+                <p class="text-gray-300">${member.bio}</p>
+                <a href="#contact" class="mt-4 inline-flex px-4 py-2 bg-gold-acc text-black rounded-full font-semibold">Contact</a>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeMemberModal() {
+        $('#member-modal').classList.add('hidden');
+        $('#member-modal').classList.remove('flex');
+    }
+
+    // ========== LIGHTBOX (Gallery/Prototypes) ==========
+    function openLightbox(src, caption) {
+        $('#lb-img').src = src;
+        $('#lb-caption').textContent = caption;
+        $('#lightbox').classList.remove('hidden');
+        $('#lightbox').classList.add('flex');
+    }
+
+    function closeLightbox() {
+        $('#lightbox').classList.add('hidden');
+        $('#lightbox').classList.remove('flex');
+    }
+
+    // ========== INITIALISATION & EVENT LISTENERS ==========
+    function initApp() {
+        // 1. Initial Data Rendering
+        renderPrototypes();
+        // renderTimeline() is removed
+        renderTeam();
+
+        // 2. Core UI Interactivity
+        startParticles();
+        // IMPORTANT: Initialize lucide icons here
+        if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+            lucide.createIcons();
+        }
+        VanillaTilt.init($all('.card-hover, #vehicle-card'), { max: 5, speed: 400, glare: true, 'max-glare': 0.1 });
+
+        // 3. Close Lightbox/Modals
+        $('#lb-close').addEventListener('click', closeLightbox);
+        $('#member-close').addEventListener('click', closeMemberModal);
+        $('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+        $('#member-modal').addEventListener('click', (e) => { if (e.target.id === 'member-modal') closeMemberModal(); });
+
+        // 4. Gallery & Prototype Thumbnails
+        $('#proto-light').addEventListener('click', () => {
+             // Open the first prototype image in the gallery/lightbox
+             const firstProto = PROTOTYPES[0];
+             if(firstProto) {
+                openLightbox(firstProto.img, firstProto.name + " — " + firstProto.tagline);
+             }
+        });
+        $('#proto-open').addEventListener('click', () => {
+             // Open the final prototype image in the gallery/lightbox
+             const finalProto = PROTOTYPES[PROTOTYPES.length - 1];
+             if(finalProto) {
+                openLightbox(finalProto.img, finalProto.name + " — " + finalProto.tagline);
+             }
+        });
+
+
+        // 5. Scroll Animations
+        gsap.registerPlugin(ScrollTrigger);
+        // Animate split header text
+        gsap.fromTo('#split-1 span', { y: '110%' }, { y: '0%', duration: 1.2, ease: 'power3.out', stagger: 0.05 });
+        gsap.fromTo('#split-2 span', { y: '110%' }, { y: '0%', duration: 1.2, ease: 'power3.out', delay: 0.2, stagger: 0.05 });
+
+        // Animate on scroll (data-animate elements)
+        $all('[data-animate]').forEach(el => {
+            gsap.fromTo(el, { opacity: 0, y: 28 }, {
+                opacity: 1, y: 0, duration: 0.85, ease: 'power3.out',
+                scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" }
+            });
+        });
+
+        // Animate progress bars
+        $all('.progress-fill').forEach(bar => {
+            const fill = bar.getAttribute('data-fill');
+            gsap.to(bar, {
+                width: `${fill}%`,
+                duration: 1.5,
+                ease: 'power3.out',
+                scrollTrigger: { trigger: bar.closest('[data-animate]'), start: "top 80%", toggleActions: "play none none none" }
+            });
+        });
+
+        // 6. Header/UI Controls
+        // 'Top' button visibility
+        window.addEventListener('scroll', () => {
+            const topBtn = $('#top-btn');
+            if (window.scrollY > 400) { topBtn.classList.remove('hidden'); } else { topBtn.classList.add('hidden'); }
+        });
+        
+        // Smooth scroll for nav links
+        $all('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offset = $('#site-header').offsetHeight; 
+                    window.scrollTo({
+                        top: target.offsetTop - offset,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        $('#top-btn').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // Placeholder for Brochure download (PDF generation)
+        $('#brochure-btn').addEventListener('click', () => {
+            alert('Brochure download functionality placeholder. (PDF generation via jspdf)');
+        });
+
+        // Simple Audio Toggle
+        const audioBtn = $('#play-audio');
+        let sound;
+        let isPlaying = false;
+        audioBtn.addEventListener('click', () => {
+            if (!sound) {
+                 // Placeholder for your background music file (replace with actual path)
+                sound = new Howl({ src: ['https://actions.google.com/sounds/v1/alarms/beep_short.ogg'], loop: true, volume: 0.2 });
+            }
+            if (isPlaying) {
+                sound.pause();
+                audioBtn.innerHTML = '<svg data-lucide="play" class="w-5 h-5 text-gold-acc"></svg>';
+            } else {
+                sound.play();
+                audioBtn.innerHTML = '<svg data-lucide="pause" class="w-5 h-5 text-gold-acc"></svg>';
+            }
+            isPlaying = !isPlaying;
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons(); // Re-render icon after changing its data-lucide attribute
+            }
+        });
+
+        // Contact form to mailto link
+        $('#contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = $('#name').value;
+            const email = $('#email').value;
+            const subject = $('#subject').value;
+            const message = $('#message').value;
+
+            const mailto = `mailto:peregrinewarriorsyas@gmail.com?subject=${encodeURIComponent(`[Website Inquiry] ${subject}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+            window.location.href = mailto;
+        });
+    }
+
+    window.addEventListener('load', initApp);
+</script>
+</body>
+</html>
